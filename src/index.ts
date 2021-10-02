@@ -1,8 +1,16 @@
+/**
+ * Stephen Johnson
+ * CSCI 4602-12
+ * Ants Vs Bees
+ * Assignment 3
+ * 10/1/2021
+ * @module
+ */
 import * as Ants from './ants';
 import {AntColony, AntGame, Hive} from './game';
 import {play, showMapOf} from './ui';
 
-
+//** Debug process to make sure the game works properly */
 if(process.argv[2] === '--debug'){ 
   //the scenario to debug with
   var colony = new AntColony(16,1,8,0); //testing colony
@@ -21,8 +29,7 @@ if(process.argv[2] === '--debug'){
 
   //play(game); //launch the interactive version from here
 
-}
-else {
+}else {
   //initialize the game to play (not interactively selected yet)
   var colony = new AntColony(2,3,8,3); //full colony
   var hive = new Hive(3,1) //testing Hive

@@ -1,30 +1,49 @@
+/**
+ * This file contains the implementation of the user interface.
+ * @module
+ */
 import {AntGame, AntColony, Place, Hive} from './game';
 import {Ant, EaterAnt, GuardAnt} from './ants';
 
+/**
+ * The Vorpal library is used for command-line interaction
+ */
 import vorpal = require('vorpal');
+/**
+ * The CHALK library is used for color in the CLI
+ */
 import chalk = require('chalk');
+/**
+ * The lodash library is used to simplify use of arrays, manipulation and testing of values, and creating composite functions.
+ */
 import _ = require('lodash');
 
-/**
- * The Vorpal library for command-line interaction
- */
 const Vorpal = vorpal();
 
 export function showMapOf(game:AntGame){
   console.log(getMap(game));
 }
 
+/**
+ * Generates the game map for an instance of AntGame.
+ */
 function getMap(game:AntGame) {
   let places:Place[][] = game.getPlaces();
   let tunnelLength = places[0].length;
+
+  /** Sets the color of the background of the bee icon to yellow and the color of the icon as black*/
   let beeIcon = chalk.bgYellow.black('B');
    
   let map = '';
 
+  /** Creates the header of the map, with the top phrase in bold */
   map += chalk.bold('The Colony is under attack!\n');
   map += `Turn: ${game.getTurn()}, Food: ${game.getFood()}, Boosts available: [${game.getBoostNames()}]\n`;
+
+  /** Creates an array of spaces equal to the number of coloumns and then combines them into a string along with the word Hive */
   map += '     '+_.range(0,tunnelLength).join('    ')+'      Hive'+'\n';
    
+  /** Creates the  top line of = and the number of bees in the hive */
   for(let i=0; i<places.length; i++){
     map += '    '+Array(tunnelLength+1).join('=====');
     
@@ -38,8 +57,10 @@ function getMap(game:AntGame) {
     }
     map += '\n';
 
+    /** The row numbers */
     map += i+')  ';
       
+    /** Shows each insect of each place */
     for(let j=0; j<places[i].length; j++){ 
       let place:Place = places[i][j];
 
@@ -55,6 +76,8 @@ function getMap(game:AntGame) {
       map += ' '; 
     }
     map += '\n    ';
+
+    /** Generates the type of floor (tunnel or water) for each place */
     for(let j=0; j<places[i].length; j++){
       let place = places[i][j];
       if(place.isWater()){
@@ -65,12 +88,16 @@ function getMap(game:AntGame) {
     }
     map += '\n';
   }
+
+  /** Adds the bottom line of numbers for the columns */
   map += '     '+_.range(0,tunnelLength).join('    ')+'\n';
 
   return map;
 }
 
-
+/**
+ * Determines which letter to use for an ant based on the ant type
+ */
 function iconFor(ant:Ant){
   if(ant === undefined){ return ' ' };
   let icon:string;
@@ -100,13 +127,18 @@ function iconFor(ant:Ant){
   return icon;
 }
 
-
+/**
+ * Deals with the commands to play the game.
+ * Uses Vorpal for command line interaction. 
+ */
 export function play(game:AntGame) {
+  /** Displays AvB $ as the command prompt */
   Vorpal
     .delimiter(chalk.green('AvB $'))
     .log(getMap(game))
     .show();
 
+  /** Defines the show command, which shows the game board */
   Vorpal
     .command('show', 'Shows the current game board.')
     .action(function(args, callback){
@@ -114,6 +146,9 @@ export function play(game:AntGame) {
       callback();
     });
 
+  /** Defines the deploy command, along with all the options and documentation for the command.
+   * Used to deploy an ant of one of the ant types at a specific tunnel.
+   */
   Vorpal
     .command('deploy <antType> <tunnel>', 'Deploys an ant to tunnel (as "row,col" eg. "0,6").')
     .alias('add', 'd')
@@ -128,7 +163,10 @@ export function play(game:AntGame) {
       }
       callback();
     });
-
+  
+    /** Defines the remove command, along with all the options and documentation for the command.
+     * Removes ant from a tunnel.
+     */
   Vorpal
     .command('remove <tunnel>', 'Removes the ant from the tunnel (as "row,col" eg. "0,6").')
     .alias('rm')
@@ -143,6 +181,9 @@ export function play(game:AntGame) {
       callback();
     });
 
+  /** Defines the boost command, along with all the options and documentation for the command.
+   * Applies a boost to the ant in a tunnel.
+   */
   Vorpal
     .command('boost <boost> <tunnel>', 'Applies a boost to the ant in a tunnel (as "row,col" eg. "0,6")')
     .alias('b')
@@ -155,6 +196,9 @@ export function play(game:AntGame) {
       callback();
     })
 
+  /** Defines the turn command, along with all the options and documentation for the command.
+   * Ends the current turn. If the player won or lost, it informs them.
+   */
   Vorpal
     .command('turn', 'Ends the current turn. Ants and bees will act.')
     .alias('end turn', 'take turn','t')

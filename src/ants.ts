@@ -1,5 +1,13 @@
+/**
+ * This file contains the definitions for insects, ants, bees, and each type of ant.
+ * @module
+ */
+
 import {AntColony, Place} from './game';
 
+/**
+ * The abstract class used to represent the ants and bees.
+ */
 export abstract class Insect {
   readonly name:string;
 
@@ -10,6 +18,10 @@ export abstract class Insect {
   getPlace() { return this.place; }
   setPlace(place:Place){ this.place = place; }
 
+  /** 
+   * Reduces the value of an insect's armor after it has been damaged, and checks if the armor is now at zero.
+   * If it is at zero, it alerts the player, removes the insect, and returns true if it has. If not, it returns false.
+   */
   reduceArmor(amount:number):boolean {
     this.armor -= amount;
     if(this.armor <= 0){
@@ -22,12 +34,12 @@ export abstract class Insect {
 
   abstract act(colony?:AntColony):void;
 
+  /** The toString function returns the name of the insect and, if it has a place on the board, its place. */
   toString():string {
     return this.name + '('+(this.place ? this.place.name : '')+')';
   }
 }
-
-
+/** Bee class that extends the Insect class, used to represent the bees in the game. */
 export class Bee extends Insect {
   readonly name:string = 'Bee';
   private status:string;
@@ -36,17 +48,26 @@ export class Bee extends Insect {
     super(armor, place);
   }
 
+  /** Stings the ant passed to it by reducing the armor, tells the player that the bee has stung the ant, and returns whether or not the ant has died. */
   sting(ant:Ant):boolean{
     console.log(this+ ' stings '+ant+'!');
     return ant.reduceArmor(this.damage);
   }
 
+  /** Checks if the place the bee is at has an ant in it. */
   isBlocked():boolean {
     return this.place.getAnt() !== undefined;
   }
 
   setStatus(status:string) { this.status = status; }
 
+  /**
+   * Checks if the bee is in the same place as an ant. If the bee
+   * does not have a condition that prevents it from attacking, it stings
+   * the ant. If there is not an ant in the place and the bee is
+   * free of conditions that prevent it to move, it moves to the next 
+   * place. Any status conditions on the bee are then cleared.
+   */
   act() {
     if(this.isBlocked()){
       if(this.status !== 'cold') {
@@ -62,7 +83,9 @@ export class Bee extends Insect {
   }
 }
 
-
+/**
+ * Abstract class that extends the Insect class and represents all the ant objects.
+ */
 export abstract class Ant extends Insect {
   protected boost:string;
   constructor(armor:number, private foodCost:number = 0, place?:Place) {
@@ -76,13 +99,20 @@ export abstract class Ant extends Insect {
   }
 }
 
-
+/**
+ * Extention of the Ant class that represents the Grower Ants that grow food for the colony.
+ */
 export class GrowerAnt extends Ant {
   readonly name:string = "Grower";
   constructor() {
     super(1,1)
   }
 
+  /**
+    * Randomly determines whether the amount of food in the ant colony
+    * is increased, if a boost is found, or if there is nothing grown 
+    * this turn.
+    */
   act(colony:AntColony) {
     let roll = Math.random();
     if(roll < 0.6){
@@ -99,7 +129,7 @@ export class GrowerAnt extends Ant {
   }  
 }
 
-
+/** Extention of the Ant class that represents the Thrower Ants that throw leaves at the bees. */
 export class ThrowerAnt extends Ant {
   readonly name:string = "Thrower";
   private damage:number = 1;
@@ -108,6 +138,12 @@ export class ThrowerAnt extends Ant {
     super(1,4);
   }
 
+  /**
+   * Determines whether the Thrower ant has any boosts and throws
+   * a leaf at the nearest bee within range if able. If the bug spray
+   * boost has been used, it kills any bees and ants in the same place 
+   * as the ant, as well as the ant. 
+   */
   act() {
     if(this.boost !== 'BugSpray'){
       let target;
@@ -143,7 +179,10 @@ export class ThrowerAnt extends Ant {
   }
 }
 
-
+/**
+ * Extension of the abstract Ant class that eats bees
+ * that come into the same place as the Eater Ant.
+ */
 export class EaterAnt extends Ant {
   readonly name:string = "Eater";
   private turnsEating:number = 0;
@@ -156,6 +195,12 @@ export class EaterAnt extends Ant {
     return this.stomach.getBees().length > 0;
   }
 
+  /**
+   * Displays the amount of turns that the eater ant has been eating.
+   * If it has not been eating a bee, it attempts to. If a bee is in 
+   * the same place as the ant, it begins being eaten. After three
+   * turns, any bees in the ants stomach are removed.
+   */
   act() {
     console.log("eating: "+this.turnsEating);
     if(this.turnsEating == 0){
@@ -177,6 +222,13 @@ export class EaterAnt extends Ant {
     }
   }  
 
+  /**
+   * Reduces the armor value of an eater ant. If an eater ant
+   * is damaged and has only been eating a bee for one round,
+   * it coughs the bee up. If it dies, it coughs up a bee so long
+   * as the bee is not dead, and the function returns true. Otherwise, 
+   * the function returns false.
+   */
   reduceArmor(amount:number):boolean {
     this.armor -= amount;
     console.log('armor reduced to: '+this.armor);
@@ -202,7 +254,11 @@ export class EaterAnt extends Ant {
   }
 }
 
-
+/**
+ * Extension of the abstract Ant class that can
+ * swim in the river sections of the map. Otherwise,
+ * it operates just like the Thrower ants.
+ */
 export class ScubaAnt extends Ant {
   readonly name:string = "Scuba";
   private damage:number = 1;
@@ -211,6 +267,13 @@ export class ScubaAnt extends Ant {
     super(1,5)
   }
 
+  /**
+   * Implementation of the abstract act function in the insect class.
+   * Determines whether the Thrower ant has any boosts and throws
+   * a leaf at the nearest bee within range if able. If the bug spray
+   * boost has been used, it kills any bees and ants in the same place 
+   * as the ant, as well as the ant. 
+   */
   act() {
     if(this.boost !== 'BugSpray'){
       let target;
@@ -246,7 +309,10 @@ export class ScubaAnt extends Ant {
   }
 }
 
-
+/**
+ * Extension of the abstract Ant class that can be used to guard
+ * another an in the same place.
+ */
 export class GuardAnt extends Ant {
   readonly name:string = "Guard";
 

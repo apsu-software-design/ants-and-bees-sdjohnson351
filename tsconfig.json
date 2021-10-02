@@ -7,6 +7,10 @@
         "removeComments": true,
         "alwaysStrict": true
     },
+    "typedocOptions": {
+        "entryPoints": ["./src/game.ts", "./src/ants.ts", "./src/index.ts", "./src/ui.ts"],
+        "out": "doc"
+    },
     "include": [
         "src/**/*"
     ],
